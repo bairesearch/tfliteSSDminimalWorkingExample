@@ -306,7 +306,7 @@ void ObjDetector::AnnotateMat(cv::Mat& mat, int batch_index, std::vector<Object>
 		//std::cout << "object i = " << i << ", object.class_id = " << object.class_id << std::endl;
 		
 		cv::rectangle(mat, object.rec, cv::Scalar(0, 0, 255), 1);
-		cv::putText(mat, labels_[object.class_id - 1], cv::Point(object.rec.x, object.rec.y - 5), cv::FONT_HERSHEY_COMPLEX, .8, cv::Scalar(10, 255, 30));
+		cv::putText(mat, labels_[object.class_id], cv::Point(object.rec.x, object.rec.y - 5), cv::FONT_HERSHEY_COMPLEX, .8, cv::Scalar(10, 255, 30));
 	}
 	#endif
 }
