@@ -9,22 +9,74 @@ How to build and run a minimal working example of TensorFlow Lite SSD/object det
 Part 1 (create a new iOS project with OpenCV libraries installed)
 -----------------
 
-Note these instructions can be skipped by using the project github.com/baxterai/tflitessdminimalworkingexample/ios (and readding the references to the opencv framework libraries);
-
-[see https://stackoverflow.com/questions/52030819/how-to-create-an-ios-objective-c-project-with-opencv/52030820#52030820 ] (instructions based on https://medium.com/@yiweini/opencv-with-swift-step-by-step-c3cc1d1ee5f1 )
+Note if using the sample project github.com/baxterai/tflitessdminimalworkingexample/ios;
+ - delete the existing references (red) to `opencv2.framework` in;
+   - Project Navigator - Frameworks
+   - Project Navigator - [APPLICATIONNAME] project (blue document icon) - [default target] - Build Phases - Link Binary With Libraries
+ - Download the opencv framework (https://opencv.org/releases.html , e.g. https://sourceforge.net/projects/opencvlibrary/files/opencv-ios/3.4.2/opencv-3.4.2-ios-framework.zip/download )
+ - Project Navigator - select [APPLICATIONNAME] project (blue document icon) - [default target]
+ - Build Phases - Link Binary With Libraries - Click the '+' - Add Other... - browse and select `opencv2.framework` (e.g. `/Users/[USERNAME]/Documents/libraries/opencv2.framework`) 
+ - Build Settings - Framework Search Paths - add `[INSERT COMPLETE PATH OF opencv2.framework]` (e.g. `/Users/[USERNAME]/Documents/libraries/`) 
+ - Project Navigator - select [APPLICATIONNAME] project (blue document icon) - [default target] - Build Phases
  
+Otherwise, create an iOS Objective-C project with OpenCV (these remaining instructions can be skipped if using the sample project github.com/baxterai/tflitessdminimalworkingexample/ios):
+
+[Extract from https://stackoverflow.com/questions/52030819/how-to-create-an-ios-objective-c-project-with-opencv/52030820#52030820 ] (instructions based on https://medium.com/@yiweini/opencv-with-swift-step-by-step-c3cc1d1ee5f1 )
+ 
+ - Download the opencv framework (https://opencv.org/releases.html , e.g. https://sourceforge.net/projects/opencvlibrary/files/opencv-ios/3.4.2/opencv-3.4.2-ios-framework.zip/download )
+ - Project Navigator - select [APPLICATIONNAME] project (blue document icon) - [default target]
+ - Build Phases - Link Binary With Libraries - Click the '+' - Add Other... - browse and select `opencv2.framework` (e.g. `/Users/[USERNAME]/Documents/libraries/opencv2.framework`) 
+ - Build Phases - Link Binary With Libraries - Click the '+' - add these additional frameworks (for opencv); AssetsLibrary, CoreGraphics, CoreMedia, CoreFoundation, Accelerate, [UIKit, Foundation, CoreVideo, CoreImage]
+ - Build Settings - Framework Search Paths - add `$(PROJECT_DIR)`
+ - Build Settings - Framework Search Paths - add `[INSERT COMPLETE PATH OF opencv2.framework]` (e.g. `/Users/[USERNAME]/Documents/libraries/`) 
+ - File - New - File - Cocoa Touch Class. Name it `OpenCVWrapper` and choose objective-C for Language.
+ - `OpenCVWrapper.m` and rename the file extension to `.mm`
+ - Manually change `OpenCVWrapper.m` to `OpenCVWrapper.mm` in the file header also
+ - Go to `OpenCVWrapper.mm` and add the following import statement on the top; `#import <opencv2/opencv.hpp>`
+
 Part 2 (install the TFlite library)
 -----------------
 
-Note these instructions can be skipped by using the project github.com/baxterai/tflitessdminimalworkingexample/ios (and readding the references to the tflite framework);
+Note if using the sample project github.com/baxterai/tflitessdminimalworkingexample/ios;
+ - delete the existing references (red) to `libtensorflow-lite.a` in;
+   - Project Navigator - Frameworks
+   - Project Navigator - [APPLICATIONNAME] project (blue document icon) - [default target] - Build Phases - Link Binary With Libraries
+ - build the libtensorflow-lite library and recreate the references to it (implement the first section of the following instructions); 
 
-[see https://stackoverflow.com/questions/52030130/how-to-build-and-run-the-tensorflow-lite-ios-examples/52030131#52030131 ] (instructions based on https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/lite/g3doc/ios.md )
+[Extract from https://stackoverflow.com/questions/52030130/how-to-build-and-run-the-tensorflow-lite-ios-examples/52030131#52030131 ] (instructions based on https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/lite/g3doc/ios.md )
+
+ - `git clone https://github.com/tensorflow/tensorflow`
+ - `cd tensorflow`
+ - `git checkout r1.10` (select a version of tensorflow that contains tensorflow/contrib/lite/download_dependencies.sh)
+   - [these instructions are based on https://github.com/tensorflow/tensorflow/tree/r1.10 ]
+ - `cd tensorflow/contrib/lite`
+ - `./download_dependencies.sh`
+ - `./build_ios_universal_lib.sh`
+ - `cd examples/ios`
+ - `./download_models.sh` (download tensorflow models to `simple/data` and `camera/data`)
+ - Show the project navigator
+ - Update various settings in your app to link against TensorFlow Lite (see `tensorflow/contrib/lite/examples/ios/simple/simple.xcodeproj` / `camera/tflite_camera_example.xcworkspace` for example):
+   - select [APPLICATIONNAME] project (blue document icon) - [default target] - Build Phases
+   - Link Binary With Libraries - add (+) library `tensorflow/contrib/lite/gen/lib/libtensorflow-lite.a`
+   - select [APPLICATIONNAME] project (blue document icon) - [default target] - Build Settings
+   - Library Search Paths - add `[INSERTTENSORFLOWSOURCELOCATIONHERE]/tensorflow/contrib/lite/gen/lib`
+   - Header Search paths - add `[INSERTTENSORFLOWSOURCELOCATIONHERE]` (the root folder of the tensorflow git repository)
+   - Header Search paths - add `[INSERTTENSORFLOWSOURCELOCATIONHERE]/tensorflow/contrib/lite/downloads`
+   - Header Search paths - add `[INSERTTENSORFLOWSOURCELOCATIONHERE]/tensorflow/contrib/lite/downloads/flatbuffers/include`
+   - C++11 support (or later) should be enabled by setting C++ Language Dialect to GNU++11 (or GNU++14), and C++ Standard Library to libc++.
+
+These remaining instructions can be skipped if using the sample project github.com/baxterai/tflitessdminimalworkingexample/ios;
+
+ - project navigator - in [INSERTAPPLICATIONNAME] project (blue document icon) - create new group called `data`
+ - drag and drop `data` folder items from `tensorflow/contrib/lite/example/ios/simple/data` (`grace_hopper.jpg`, `labels.txt`, `mobilenet...`) to the newly created data folder in xCode (when asked, select Destination: Copy items if needed)
+ - modify the application's existing `AppDelegate.m` accordingly with `tensorflow/contrib/lite/examples/ios/simple/AppDelegate.mm`/`.h` contents
+ - drag and drop source code items from `tensorflow/contrib/lite/example/ios/simple` (`ios_image_load.h`, `ios_image_load.mm`, `RunModelViewController.h`, `RunModelViewController.mm`, `RunModelViewController.xib` [NOT: `AppDelegate.h`, `AppDelegate.mm`, `main.mm`])
 
 
 Part 3 (Create a patched version of `obj_detect_lite.cc`)
 -----------------
 
-Note these instructions can be be skipped by using the `obj_detect_lite.cc` code in github.com/baxterai/tflitessdminimalworkingexample/ios;
+Note these instructions can be be skipped by using the `obj_detect_lite-ios.cpp` code in github.com/baxterai/tflitessdminimalworkingexample/ios;
 
 Instructions based on; https://github.com/tensorflow/tensorflow/issues/15633 - hidden items - load more
 
@@ -33,7 +85,7 @@ Instructions based on; https://github.com/tensorflow/tensorflow/issues/15633 - h
   - OPTIONAL: `git checkout master` / `11b8a2c8f4fd882c591c05d9cc7fa4ed538e2661` (these instructions are based on the 14 August 2018 version, https://github.com/YijinLiu/tf-cpu/commit/11b8a2c8f4fd882c591c05d9cc7fa4ed538e2661)
   - method 1;
     - add the reference `nms(objects)` along with the functions `iou`/`objectComp`/`nms`
-    - the `struct Object` defintition along with its references in `class ObjDetector` (`std::vector<Object> objects;`) and function `AnnotateMat` 
+    - add the `struct Object` defintition along with its references in `class ObjDetector` (`std::vector<Object> objects;`) and function `AnnotateMat` 
   - method 2;
     - copy the latest version of `obj_detect_lite.cc` by YijinLiu `tf-cpu/benchmark/obj_detect_lite.cc` to a temporary folder `vMaster`
     - `git checkout f31fb25d97adcd00124646c0413bfdec989840fa` (checkout the older 28 May 2018 version of https://github.com/YijinLiu/tf-cpu upon which WeiboXu's version was created, such that a diff can be generated)
@@ -69,8 +121,8 @@ Note these instructions can be be skipped using the project github.com/baxterai/
  - Project Navigator (left pane) - [APPLICATIONNAME]
  - Drag and drop the relevant source code items from `tflitessdminimalworkingexample` (`object_detect_lite-ios.cpp`/`object_detect_lite-ios.hpp`/`OpenCVWrapper.hpp`/`OpenCVWrapper.mm`) into the primary application folder in xCode (when asked, select Destination: Copy items if needed)
  - Merge the relevant code from `tflitessdminimalworkingexample` `ViewController.m` into [APPLICATIONNAME] `ViewController.m`
- - project navigator - in [APPLICATIONNAME] project (blue document icon) - create new group called `data`
- - drag and drop `data` folder items from tflitessdminimalworkingexample/data (`grace_hopper.jpg`, `coco10_labels.txt`, `coco10.tflite`) to the newly created data folder in xCode (when asked, select Destination: Copy items if needed)
+ - Project navigator - in [APPLICATIONNAME] project (blue document icon) - create new group called `data`
+ - Drag and drop `data` folder items from tflitessdminimalworkingexample/data (`grace_hopper.jpg`, `coco10_labels.txt`, `coco10.tflite`) to the newly created data folder in xCode (when asked, select Destination: Copy items if needed)
 
 
 How to build and run a minimal working example of TensorFlow Lite SSD/object detection on Android
@@ -102,12 +154,11 @@ Android Studio - create a new Android project
 - Configure Activity
   - Activity Name: [MainActivity]
   - tick generate layout file
-  - Layout Name: activity_name
+  - Layout Name: `activity_name`
   - Backwards compatibility (AppCompat)
   - Next
 - Customise C++ Support
   - C++ Standard: Toolchain Default
-
 
 Part 2 (prepare the Android project)
 -----------------
@@ -161,12 +212,12 @@ Part 3 (copy the minimal TensorFlow Lite Android example source code)
  - OPTIONAL: `git checkout master` / `938a3b77797164db736a1006a7656326240baa59` 
    - [these instructions are based on https://github.com/tensorflow/tensorflow/commit/938a3b77797164db736a1006a7656326240baa59 ]
  - open `tensorflow/contrib/lite/examples/android/app/src/main/java/org/tensorflow/demo/` in file explorer
- - copy `AutoFitTextureView.java`, `Classifier.java`, `OverlayView.java`, `TFLiteObjectDetectionAPIModel.java` to [PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME]
- - copy `AutoFitTextureView.java`, `Classifier.java`, `OverlayView.java`, `TFLiteObjectDetectionAPIModel.java` to [PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME]
- - copy env `BorderedText.java`, `ImageUtils.java`, `Logger.java`, `Size.java` to [PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME]/env
- - copy env `MultiBoxTracker.java`, `ObjectTracker.java` to [PATHTOAPPLICATION]/app/src/main/java/com/example/user/tflitessdminimalworkingexample/tracking
- - in all copied java files, replace `package org.tensorflow.demo.env` (e.g. with `package com.example.user.[APPLICATIONNAME]` where this matches the [PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME] directory structure)
- - in all copied java files, replace all instances of `com.example.user.tflitessdminimalworkingexample` (e.g. with `com.example.user.[APPLICATIONNAME]` where this matches the [PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME] directory structure)
+ - copy `AutoFitTextureView.java`, `Classifier.java`, `OverlayView.java`, `TFLiteObjectDetectionAPIModel.java` to `[PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME]`
+ - copy `AutoFitTextureView.java`, `Classifier.java`, `OverlayView.java`, `TFLiteObjectDetectionAPIModel.java` to `[PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME]`
+ - copy env `BorderedText.java`, `ImageUtils.java`, `Logger.java`, `Size.java` to `[PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME]/env`
+ - copy env `MultiBoxTracker.java`, `ObjectTracker.java` to `[PATHTOAPPLICATION]/app/src/main/java/com/example/user/tflitessdminimalworkingexample/tracking`
+ - in all copied java files, replace `package org.tensorflow.demo.env` (e.g. with `package com.example.user.[APPLICATIONNAME]` where this matches the `[PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME]` directory structure)
+ - in all copied java files, replace all instances of `com.example.user.tflitessdminimalworkingexample` (e.g. with `com.example.user.[APPLICATIONNAME]` where this matches the `[PATHTOAPPLICATION]/app/src/main/java/com/example/user/[APPLICATIONNAME]` directory structure)
 
 Part 4 (copy the minimal TensorFlow Lite Android example UI code)
 -----------------
@@ -177,32 +228,32 @@ Part 4 (copy the minimal TensorFlow Lite Android example UI code)
   - open `tensorflow/contrib/lite/examples/android/app/src/main/res/` in file explorer
   - import the `layoutcamera_connection_fragment_tracking.xml` contents into `[PATHTOAPPLICATION]/app/src/main/res/activity_main.xml`;
  
-    <?xml version="1.0" encoding="utf-8"?>
-    <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        <?xml version="1.0" encoding="utf-8"?>
+        <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".MainActivity">
         
-        <ImageView
-            android:id="@+id/imageView1"
-            android:scaleType="fitStart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:srcCompat="@android:color/holo_green_dark" />
+            <ImageView
+                android:id="@+id/imageView1"
+                android:scaleType="fitStart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srcCompat="@android:color/holo_green_dark" />
+        
+            <com.example.user.[APPLICATIONNAME].OverlayView
+                android:id="@+id/tracking_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        
+            <com.example.user.[APPLICATIONNAME].OverlayView
+                android:id="@+id/debug_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
     
-        <com.example.user.[APPLICATIONNAME].OverlayView
-            android:id="@+id/tracking_overlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    
-        <com.example.user.[APPLICATIONNAME].OverlayView
-            android:id="@+id/debug_overlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    
-    </android.support.design.widget.CoordinatorLayout>
+        </android.support.design.widget.CoordinatorLayout>
     
 Part 5 (create the TensorFlow Lite Android example UI minimal activity source code)
 -----------------
@@ -213,4 +264,4 @@ Part 5 (create the TensorFlow Lite Android example UI minimal activity source co
  - Build
  - Run
  - [give permissions to app when requested]
- - Run example app (tflDetect) on Android phone (search - tflDetect)
+ - Run example app (tflitessdminimalworkingexample) on Android phone (search - tflitessdminimalworkingexample)
